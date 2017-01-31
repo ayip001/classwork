@@ -2,42 +2,52 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <math.h>
 
 using namespace std;
 
-class A{
-public:
-    int Avar;
-    
-    A(int Avar = 0){this->Avar = Avar;}
-};
-
-class B{
-private:
-    static A *AArray;
-public:
-    static void setAArray();
-};
-
-A* B::AArray = 0;
-
 int main(){
-    srand(time(NULL));
-    A *p;
-    p = new A[5];
-    for(int i = 0; i < 52; i++)
-        p[i] = A(i + 1);
+    string thisGen = "*";
+    string extremeBit = " ";
+    int RULES_SIZE = 8;
+    string nextGen;
+    int rules[RULES_SIZE];
     
-    random_shuffle(&p[0], &p[2]);
+    int newRule = 124;
+    for(int i = RULES_SIZE - 1; i >= 0; i--){
+        rules[i] = newRule % 2;
+        newRule /= 2;
+    }
     
-    for(int i = 0; i < 52; i++)
-        cout << p[i].Avar << " ";
+    for(int i = 0; i < RULES_SIZE; i++)
+        cout << rules[i];
     
+    string fullBit = thisGen;
+    int bit;
+    
+    for(int k = 0; k < 10; k++){
+        nextGen = "";
+        
+        for(int i = 0; i < log2(RULES_SIZE) - 1; i++){
+            thisGen = thisGen + extremeBit;
+            thisGen = extremeBit + thisGen;
+        }
+        
+        for(int i = 0; i < thisGen.length() - log2(RULES_SIZE) + 1; i++){
+            bit = 0;
+            
+            for(int j = 0; j < log2(RULES_SIZE); j++){
+                if(thisGen[i + j] != extremeBit[0])
+                    bit += pow(2, log2(RULES_SIZE) - 1 - j);
+            }
+            
+            cout << bit << " " << rules[RULES_SIZE - 1 - bit] << endl;
+            
+            nextGen += (rules[RULES_SIZE - 1 - bit]) ? fullBit : extremeBit;
+        }
+        
+        cout << nextGen;
+        thisGen = nextGen;
+    }
     return 0;
-}
-
-void B::setAArray(){
-    A *data;
-    data = new A[10];
-    AArray = data;
 }
