@@ -30,16 +30,16 @@ DONE bool evalReturnIfError - if an illegal (out-of-range) or no input is presen
 DONE bool state - this remembers the result of the most recent call to eval( int )
 
 public
-Constructors  -  BooleanFunc( int tableSize = DEFAULT_TABLE_SIZE, bool evalReturnIfError = false )
+DONE Constructors  -  BooleanFunc( int tableSize = DEFAULT_TABLE_SIZE, bool evalReturnIfError = false )
 and a Destructor
 bool setTruthTableUsingTrue( int inputsThatProduceTrue[], int arraySize ) ex: returns {3,9} if only 3 and 9 true
 bool setTruthTableUsingFalse( int inputsThatProduceFalse[], int arraySize ) for if true is more common
 bool eval( int input ) mutator for the state member based on the an input integer, which also returns that evaluated state
     if input invalid evalReturnIfError is assigned to state and returned.
 DONE bool getState(){ return state; }
-Deep memory methods - 
-    A copy constructor, 
-    destructor and 
+DONE Deep memory methods - 
+    DONE A copy constructor, 
+    DONE destructor 
     DONE assignment operator.
 optional helper methods
 
@@ -61,7 +61,7 @@ private:
 public:
     BooleanFunc(int tableSize = DEFAULT_TABLE_SIZE, 
         bool evalReturnIfError = false);
-    BooleanFunc(const & BooleanFunc bf);
+    BooleanFunc(const BooleanFunc &bf);
     ~BooleanFunc();
     bool setTruthTableUsingTrue(int inputsThatProduceTrue[], int arraySize);
     bool setTruthTableUsingFalse(int inputsThatProduceFalse[], int arraySize);
@@ -72,7 +72,9 @@ public:
 };
 
 int main(){
-    
+    BooleanFunc bf1, bf2 = BooleanFunc(bf1);
+    bf1 = bf2;
+    bf1 = bf2;
     return 0;
 }
 
@@ -82,21 +84,46 @@ BooleanFunc::BooleanFunc(int tableSize, bool evalReturnIfError){
         this->tableSize = tableSize;
     else
         this->tableSize = DEFAULT_TABLE_SIZE;
+    truthTable = NULL;
+    allocateCleanArray();
     this->evalReturnIfError = evalReturnIfError;
 }
 
-BooleanFunc::BooleanFunc(const & BooleanFunc bf){
-    
+BooleanFunc::BooleanFunc(const BooleanFunc &bf){
+    tableSize = bf.tableSize;
+    evalReturnIfError = bf.evalReturnIfError;
+    truthTable = NULL;
+    allocateCleanArray();
+    for(int i = 0; i < this->tableSize; i++)
+        this->truthTable[i] = bf.truthTable[i];
 }
 
 BooleanFunc::~BooleanFunc(){
+    deallocateArray();
+}
+
+void BooleanFunc::allocateCleanArray(){
+    if(truthTable != NULL)
+        deallocateArray();
     
+    truthTable = new bool [tableSize];
+    for(int i = 0; i < tableSize; i++)
+        truthTable = new bool;
+}
+
+void BooleanFunc::deallocateArray(){
+    if(truthTable == NULL)
+        return;
+    delete[] truthTable;
+    truthTable = NULL;
 }
 
 BooleanFunc & BooleanFunc::operator=(const BooleanFunc &bf){
     if(this != &bf){
         this->tableSize = bf.tableSize;
-        this->truthTable = bf.truthTable;
+        this->allocateCleanArray();
+        for(int i = 0; i < this->tableSize; i++)
+            this->truthTable[i] = bf.truthTable[i];
         this->evalReturnIfError = bf.evalReturnIfError;
         this->state = bf.state;
     }
