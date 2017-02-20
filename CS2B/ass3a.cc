@@ -8,7 +8,7 @@ using namespace std;
 // Automation class prototype
 class Automaton{
 private:
-    static const int RULES_SIZE = 32; // can only be 2^n, n >= 3 odd number
+    static const int RULES_SIZE = 8; // can only be 2^n, n >= 3 odd number
     
     bool rules[RULES_SIZE];
     string thisGen;
@@ -125,7 +125,15 @@ void Automaton::propagateNewGeneration(){
     
     thisGen = nextGen;
 }
+/*
 
+- Rule 131 doesn't generate the correct pattern. Need to update extremeBit in propagateNewGeneration() (-3)
+
+- Part A (20)
+
+- Optional Part B (+5) Great work!
+
+*/
 /* ----------------------- RULES_SIZE = 8 | rules = 4 -------------------------
 
 Enter Rule (0 - 255): 4
