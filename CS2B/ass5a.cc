@@ -87,7 +87,6 @@ int main(){
     cout << "demonstrating code copied from spec: ";
     Complex a(3, -4), b(1.1, 2.1), c;
     double x = 2, y = -1.7;
-
     c = a + b;
     cout << "\na + b = " << c;
     c = x - a;

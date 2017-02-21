@@ -7,7 +7,7 @@
 #include <stdlib.h>   
 
 using namespace std;
-
+// DELETE THIS COMMENT inconsistent runtime error occurs if I use copy constructor or use =
 /*checklist
 Act1:
 BooleanFunc will contain a truthTable (a dynamic array) which defines the boolean function being represented.
@@ -32,8 +32,8 @@ DONE bool state - this remembers the result of the most recent call to eval( int
 public
 DONE Constructors  -  BooleanFunc( int tableSize = DEFAULT_TABLE_SIZE, bool evalReturnIfError = false )
 and a Destructor
-bool setTruthTableUsingTrue( int inputsThatProduceTrue[], int arraySize ) ex: returns {3,9} if only 3 and 9 true
-bool setTruthTableUsingFalse( int inputsThatProduceFalse[], int arraySize ) for if true is more common
+DONE bool setTruthTableUsingTrue( int inputsThatProduceTrue[], int arraySize ) ex: returns {3,9} if only 3 and 9 true
+DONE bool setTruthTableUsingFalse( int inputsThatProduceFalse[], int arraySize ) for if true is more common
 bool eval( int input ) mutator for the state member based on the an input integer, which also returns that evaluated state
     if input invalid evalReturnIfError is assigned to state and returned.
 DONE bool getState(){ return state; }
@@ -50,7 +50,7 @@ class BooleanFunc{
 public:
     static const int MAX_TABLE_FOR_CLASS = 65536; // 16 binary input lines
     static const int DEFAULT_TABLE_SIZE = 16;
-private:
+public:
     int tableSize;
     bool *truthTable;
     bool evalReturnIfError;
@@ -72,21 +72,33 @@ public:
 };
 
 int main(){
-    BooleanFunc bf1, bf2 = BooleanFunc(bf1);
-    bf1 = bf2;
-    bf1 = bf2;
+    BooleanFunc segA, segB( 13 ), segC( 100, true );
+    
+    for(int i = 0; i < 100; i++)
+        cout << segC.truthTable[1];
+    
+    int evenFunc[] = { 0, 2, 4, 6, 8, 10, 12, 14 }, inputX;
+    short sizeEvenFunc = sizeof(evenFunc) / sizeof(evenFunc[0]);
+
+    int greater9Func[] = { 10, 11, 12, 13, 14, 15 };
+    short sizeGreater9Func = sizeof(greater9Func) / sizeof(greater9Func[0]);
+
+    int greater3Func[] = { 0, 1, 2, 3 };
+    short sizeGreater3Func = sizeof(greater3Func) / sizeof(greater3Func[0]);
+
+    // testing class BooleanFunc
     return 0;
 }
 
 // BooleanFunc method definitions
 BooleanFunc::BooleanFunc(int tableSize, bool evalReturnIfError){
-    if(tableSize < log2(MAX_TABLE_FOR_CLASS) && tableSize > 0)
+    if(tableSize < MAX_TABLE_FOR_CLASS && tableSize > 0)
         this->tableSize = tableSize;
     else
         this->tableSize = DEFAULT_TABLE_SIZE;
+    this->evalReturnIfError = evalReturnIfError;
     truthTable = NULL;
     allocateCleanArray();
-    this->evalReturnIfError = evalReturnIfError;
 }
 
 BooleanFunc::BooleanFunc(const BooleanFunc &bf){
@@ -108,7 +120,7 @@ void BooleanFunc::allocateCleanArray(){
     
     truthTable = new bool [tableSize];
     for(int i = 0; i < tableSize; i++)
-        truthTable = new bool;
+        truthTable[i] = new bool(evalReturnIfError);
 }
 
 void BooleanFunc::deallocateArray(){
@@ -116,6 +128,22 @@ void BooleanFunc::deallocateArray(){
         return;
     delete[] truthTable;
     truthTable = NULL;
+}
+
+bool BooleanFunc::setTruthTableUsingTrue(int inputsThatProduceTrue[], 
+    int arraySize){
+    for(int i = 0; i < arraySize; i++)
+        truthTable[inputsThatProduceTrue[i] - 1] = !evalReturnIfError;
+    
+    return true;
+}
+
+bool BooleanFunc::setTruthTableUsingFalse(int inputsThatProduceFalse[], 
+    int arraySize){
+    for(int i = 0; i < arraySize; i++)
+        truthTable[inputsThatProduceFalse[i] - 1] = !evalReturnIfError;
+        
+    return true;
 }
 
 BooleanFunc & BooleanFunc::operator=(const BooleanFunc &bf){
