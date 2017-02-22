@@ -1,10 +1,7 @@
 #include <iostream>
 #include <string>
-#include <climits>
-#include <cmath>
 #include <sstream>
-#include <ctime>       
-#include <stdlib.h>   
+#include <stdlib.h>
 
 using namespace std;
 
@@ -13,7 +10,8 @@ class BooleanFunc{
 public:
     static const int MAX_TABLE_FOR_CLASS = 65536; // 16 binary input lines
     static const int DEFAULT_TABLE_SIZE = 16;
-public:
+    
+private:
     int tableSize;
     bool *truthTable;
     bool evalReturnIfError;
@@ -21,6 +19,7 @@ public:
     
     void allocateCleanArray();
     void deallocateArray();
+    
 public:
     BooleanFunc(int tableSize = DEFAULT_TABLE_SIZE, 
         bool evalReturnIfError = false);
@@ -34,54 +33,54 @@ public:
     BooleanFunc & operator=(const BooleanFunc &bf);
 };
 
+// MultiSegmentLogic class prototype
+class MultiSegmentLogic{
+protected:
+    int numSegs;
+    BooleanFunc *segs;
+    
+private:
+    void allocateCleanArray();
+    void deallocateArray();
+
+public:
+    MultiSegmentLogic(int numSegs = 0); 
+    MultiSegmentLogic(const MultiSegmentLogic &msl);
+    ~MultiSegmentLogic();
+    bool setNumSegs(int numSegs); // numSegs >= 0
+    bool setSegment(int segNum, BooleanFunc &funcForThisSeg);
+    void eval(int input);
+    
+    MultiSegmentLogic & operator=(const MultiSegmentLogic &msl);
+};
+
+// SevenSegmentLogic class prototype
+class SevenSegmentLogic : public MultiSegmentLogic{
+public:
+    SevenSegmentLogic() : MultiSegmentLogic(7){ init(); }
+    bool getValOfSeg(int seg);
+    
+private:
+    void init();
+};
+
 int main(){
-    BooleanFunc segA, segB( 13 ), segC( 100, true );
+    int inputX, k;
+    SevenSegmentLogic my7Seg;
+    SevenSegmentLogic myCopy(my7Seg);
+    my7Seg = myCopy = myCopy = SevenSegmentLogic();
     
-    int evenFunc[] = { 0, 2, 4, 6, 8, 10, 12, 14 }, inputX;
-    short sizeEvenFunc = sizeof(evenFunc) / sizeof(evenFunc[0]);
-
-    int greater9Func[] = { 10, 11, 12, 13, 14, 15 };
-    short sizeGreater9Func = sizeof(greater9Func) / sizeof(greater9Func[0]);
-
-    int greater3Func[] = { 0, 1, 2, 3 };
-    short sizeGreater3Func = sizeof(greater3Func) / sizeof(greater3Func[0]);
-
+    cout << "Tested = operator and copy constructor. No error. Carry on\n\n";
     
-    segA.setTruthTableUsingTrue( evenFunc, sizeEvenFunc );
-    segB.setTruthTableUsingTrue( greater9Func, sizeGreater9Func );
-    segC.setTruthTableUsingFalse( greater3Func, sizeGreater3Func );
-    // testing class BooleanFunc
-    cout << "before eval()\n";
-    cout
-        << "\n  A(x) = "
-        << segA.getState()
-        << "\n  B(x) = "
-        << segB.getState()
-        << "\n  C(x) = "
-        << segC.getState()
-        << endl << endl;
-    cout << "looping with eval()\n";
-    for(inputX = 0; inputX < 10; inputX++ ){
-        segA.eval( inputX );
-        segB.eval( inputX );
-        segC.eval( inputX );
-        cout
-            << "Input: " << inputX
-            << "\n  A(x) = "
-            << segA.getState()
-            << "\n  B(x) = "
-            << segB.getState()
-            << "\n  C(x) = "
-            << segC.getState()
-            << endl << endl;
+    cout << "[ # ]| a | b | c | d | e | f | g |\n"
+        << "----------------------------------";
+    for(inputX = 0; inputX < 16; inputX++){
+        myCopy.eval(inputX);
+        cout << "\n[ " << inputX << ((inputX >= 10) ? "" : " ") << "]| ";
+        for(k = 0; k < 7; k++)
+            cout << myCopy.getValOfSeg(k) << " | ";
+        cout << endl;
     }
-    segA.eval( inputX );
-    
-    cout << "Finally testing assignment operator and copy constructors"
-        << "\nProgram should exit normally with no runtime error";
-        
-    segA = segB = segC = segB;
-    segA = BooleanFunc(segB);
     return 0;
 }
 
@@ -129,26 +128,28 @@ void BooleanFunc::deallocateArray(){
 
 bool BooleanFunc::setTruthTableUsingTrue(int inputsThatProduceTrue[], 
     int arraySize){
-    for(int i = 0; i < arraySize; i++){
-        if(inputsThatProduceTrue[i] >= tableSize)
-            return false;
-        truthTable[inputsThatProduceTrue[i]] = !evalReturnIfError;
-    }
+    allocateCleanArray();
+    for(int i = 0; i < arraySize; i++)
+        if(inputsThatProduceTrue[i] >= 0 && 
+            inputsThatProduceTrue[i] < tableSize)
+            truthTable[inputsThatProduceTrue[i]] = !evalReturnIfError;
     return true;
 }
 
 bool BooleanFunc::setTruthTableUsingFalse(int inputsThatProduceFalse[], 
     int arraySize){
-    for(int i = 0; i < arraySize; i++){
-        if(inputsThatProduceFalse[i] >= tableSize)
-            return false;
-        truthTable[inputsThatProduceFalse[i]] = !evalReturnIfError;
-    }
+    allocateCleanArray();
+    for(int i = 0; i < arraySize; i++)
+        if(inputsThatProduceFalse[i] >= 0 && 
+            inputsThatProduceFalse[i] < tableSize)
+            truthTable[inputsThatProduceFalse[i]] = !evalReturnIfError;
     return true;
 }
 
 bool BooleanFunc::eval(int input){
-    state = truthTable[input];
+    state = evalReturnIfError;
+    if(input >= 0 && input < tableSize)
+        state = truthTable[input];
     return state;
 }
 
@@ -164,67 +165,147 @@ BooleanFunc & BooleanFunc::operator=(const BooleanFunc &bf){
     return *this;
 }
 
-/* ------------------------- ACT 1 TEST ---------------------------------------
+// MultiSegmentLogic method definitions
+MultiSegmentLogic::MultiSegmentLogic(int numSegs){
+    segs = NULL;
+    if(!setNumSegs(numSegs))
+        setNumSegs(0);
+}
 
-before eval()
+MultiSegmentLogic::MultiSegmentLogic(const MultiSegmentLogic &msl){
+    segs = NULL;
+    setNumSegs(msl.numSegs);
+    for(int i = 0; i < this->numSegs; i++)
+        this->segs[i] = msl.segs[i];
+}
 
-  A(x) = 0
-  B(x) = 0
-  C(x) = 0
+MultiSegmentLogic::~MultiSegmentLogic(){
+    deallocateArray();
+}
 
-looping with eval()
-Input: 0
-  A(x) = 1
-  B(x) = 0
-  C(x) = 0
+void MultiSegmentLogic::allocateCleanArray(){
+    if(segs != NULL)
+        deallocateArray();
+    segs = new BooleanFunc [numSegs];
+    for(int i = 0; i < numSegs; i++)
+        segs[i] = BooleanFunc();
+}
 
-Input: 1
-  A(x) = 0
-  B(x) = 0
-  C(x) = 0
+void MultiSegmentLogic::deallocateArray(){
+    if(segs == NULL)
+        return;
+    delete[] segs;
+    segs = NULL;
+}
 
-Input: 2
-  A(x) = 1
-  B(x) = 0
-  C(x) = 0
+bool MultiSegmentLogic::setNumSegs(int numSegs){
+    if(numSegs >= 0){
+        deallocateArray();
+        this->numSegs = numSegs;
+        allocateCleanArray();
+        return true;
+    }
+    return false;
+}
 
-Input: 3
-  A(x) = 0
-  B(x) = 0
-  C(x) = 0
+bool MultiSegmentLogic::setSegment(int segNum, BooleanFunc &funcForThisSeg){
+    if(segNum < 0 || segNum >= numSegs)
+        return false;
+    segs[segNum] = funcForThisSeg;
+    return true;
+}
 
-Input: 4
-  A(x) = 1
-  B(x) = 0
-  C(x) = 1
+void MultiSegmentLogic::eval(int input){
+    for(int i = 0; i < numSegs; i++)
+        segs[i].eval(input);
+}
 
-Input: 5
-  A(x) = 0
-  B(x) = 0
-  C(x) = 1
+MultiSegmentLogic & MultiSegmentLogic::operator=(const MultiSegmentLogic &msl){
+    if(this != &msl){
+        this->setNumSegs(msl.numSegs);
+        for(int i = 0; i < this->numSegs; i++)
+            this->segs[i] = msl.segs[i];
+    }
+    return *this;
+}
 
-Input: 6
-  A(x) = 1
-  B(x) = 0
-  C(x) = 1
+// SevenSegmentLogic method definitions
+bool SevenSegmentLogic::getValOfSeg(int seg){
+    if(seg < 0 || seg >= 16)
+        return false;
+    return segs[seg].getState();
+}
 
-Input: 7
-  A(x) = 0
-  B(x) = 0
-  C(x) = 1
+void SevenSegmentLogic::init(){
+    BooleanFunc bf = BooleanFunc(16, true);
+    // seg a
+    int aFunc[] = {1, 4, 11, 13};
+    bf.setTruthTableUsingFalse(aFunc, 4);
+    setSegment(0, bf);
+    // seg b
+    int bFunc[] = {5, 6, 11, 12, 14, 15};
+    bf.setTruthTableUsingFalse(bFunc, 6);
+    setSegment(1, bf);
+    // seg c
+    int cFunc[] = {2, 12, 14, 15};
+    bf.setTruthTableUsingFalse(cFunc, 4);
+    setSegment(2, bf);
+    // seg d
+    int dFunc[] = {1, 4, 7, 9, 10, 15};
+    bf.setTruthTableUsingFalse(dFunc, 6);
+    setSegment(3, bf);
+    // seg e
+    int eFunc[] = {1, 3, 4, 5, 7, 9};
+    bf.setTruthTableUsingFalse(eFunc, 6);
+    setSegment(4, bf);
+    // seg f
+    int fFunc[] = {1, 2, 3, 7, 13};
+    bf.setTruthTableUsingFalse(fFunc, 5);
+    setSegment(5, bf);
+    // seg g
+    int gFunc[] = {0, 1, 7, 12};
+    bf.setTruthTableUsingFalse(gFunc, 4);
+    setSegment(6, bf);
+}
 
-Input: 8
-  A(x) = 1
-  B(x) = 0
-  C(x) = 1
+/* ------------------------- Act 3 Test ---------------------------------------
 
-Input: 9
-  A(x) = 0
-  B(x) = 0
-  C(x) = 1
+Tested = operator and copy constructor. No error. Carry on
 
-Finally testing assignment operator and copy constructors
-Program should exit normally with no runtime error
+[ # ]| a | b | c | d | e | f | g |
+----------------------------------
+[ 0 ]| 1 | 1 | 1 | 1 | 1 | 1 | 0 | 
+
+[ 1 ]| 0 | 1 | 1 | 0 | 0 | 0 | 0 | 
+
+[ 2 ]| 1 | 1 | 0 | 1 | 1 | 0 | 1 | 
+
+[ 3 ]| 1 | 1 | 1 | 1 | 0 | 0 | 1 | 
+
+[ 4 ]| 0 | 1 | 1 | 0 | 0 | 1 | 1 | 
+
+[ 5 ]| 1 | 0 | 1 | 1 | 0 | 1 | 1 | 
+
+[ 6 ]| 1 | 0 | 1 | 1 | 1 | 1 | 1 | 
+
+[ 7 ]| 1 | 1 | 1 | 0 | 0 | 0 | 0 | 
+
+[ 8 ]| 1 | 1 | 1 | 1 | 1 | 1 | 1 | 
+
+[ 9 ]| 1 | 1 | 1 | 0 | 0 | 1 | 1 | 
+
+[ 10]| 1 | 1 | 1 | 0 | 1 | 1 | 1 | 
+
+[ 11]| 0 | 0 | 1 | 1 | 1 | 1 | 1 | 
+
+[ 12]| 1 | 0 | 0 | 1 | 1 | 1 | 0 | 
+
+[ 13]| 0 | 1 | 1 | 1 | 1 | 0 | 1 | 
+
+[ 14]| 1 | 0 | 0 | 1 | 1 | 1 | 1 | 
+
+[ 15]| 1 | 0 | 0 | 0 | 1 | 1 | 1 | 
+
 
 Process exited with code: 0
 
