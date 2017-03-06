@@ -6,7 +6,12 @@ using namespace std;
 
 int main()
 {
-    bool t = new bool(false);
-    cout << t;
+    int i;
+    
+    i=-69;
+    if(69+i)
+        cout << i << endl;
+    
+    
     return 0;
 }

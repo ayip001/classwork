@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 using namespace std;
+// todo fix: BooleanFunc state should = evalReturnIfError when instantiated
 
 // BooleanFunc class prototype
 class BooleanFunc{
@@ -64,21 +65,70 @@ private:
     void init();
 };
 
+// SevenSegmentImage class prototype
+class SevenSegmentImage{
+public:
+    static const int MIN_HEIGHT = 5;
+    static const int MIN_WIDTH = 5;
+    static const int MAX_HEIGHT = 65;
+    static const int MAX_WIDTH = 41;
+    static const string DRAW_CHAR;
+    static const string BLANK_CHAR;
+
+private:
+    bool **data;
+    int topRow, midRow, bottomRow, leftCol, rightCol;
+
+public:
+    SevenSegmentImage(int width = MIN_WIDTH, int height = MIN_HEIGHT);
+    ~SevenSegmentImage(){ deallocateArray(); }
+    void clearImage();
+    bool turnOnCellsForSegment(char segment);
+    bool setSize(int width, int height);
+    void display();
+
+    SevenSegmentImage(const SevenSegmentImage &tdi);
+    const SevenSegmentImage &operator=(const SevenSegmentImage &rhs);
+
+private:
+    static bool validateSize(int width, int height);
+    void allocateCleanArray();
+    void deallocateArray();
+
+    void drawHorizontal(int row);
+    void drawVertical(int col, int startRow, int stopRow);
+};
+const string SevenSegmentImage::DRAW_CHAR = "*";
+const string SevenSegmentImage::BLANK_CHAR = " ";
+
+// SevenSegmentDisplay class prototype
+class SevenSegmentDisplay{
+private:
+    SevenSegmentImage theImage;
+    SevenSegmentLogic theDisplay;
+
+public:
+    SevenSegmentDisplay(
+        int width = SevenSegmentImage::MIN_WIDTH,
+        int height = SevenSegmentImage::MIN_HEIGHT
+    );
+    bool setSize(int width, int height);
+    void loadConsoleImage();
+    void consoleDisplay();
+    void eval(int input);
+};
+
+
 int main(){
-    int inputX, k;
-    SevenSegmentLogic my7Seg;
-    SevenSegmentLogic myCopy(my7Seg);
-    my7Seg = myCopy = myCopy = SevenSegmentLogic();
+    SevenSegmentDisplay my7SegForCon(15, 13);
     
-    cout << "Tested = operator and copy constructor. No error. Carry on\n\n";
-    
-    cout << "[ # ]| a | b | c | d | e | f | g |\n"
-        << "----------------------------------";
-    for(inputX = 0; inputX < 16; inputX++){
-        myCopy.eval(inputX);
-        cout << "\n[ " << inputX << ((inputX >= 10) ? "" : " ") << "]| ";
-        for(k = 0; k < 7; k++)
-            cout << myCopy.getValOfSeg(k) << " | ";
+    my7SegForCon.setSize(5, 7);
+    my7SegForCon.setSize(6, 40);
+    for (int j = 0; j < 16; j++){
+        cout << j << " :";
+        my7SegForCon.eval(j);
+        my7SegForCon.loadConsoleImage();
+        my7SegForCon.consoleDisplay();
         cout << endl;
     }
     return 0;
@@ -268,43 +318,282 @@ void SevenSegmentLogic::init(){
     setSegment(6, bf);
 }
 
-/* ------------------------- Act 3 Test ---------------------------------------
+// SevenSegmentImage method definitions
+SevenSegmentImage::SevenSegmentImage(int width, int height){
+    data = NULL;
+    if(!setSize(width, height))
+        setSize(MIN_WIDTH, MIN_HEIGHT);
+}
 
-Tested = operator and copy constructor. No error. Carry on
+SevenSegmentImage::SevenSegmentImage(const SevenSegmentImage &tdi){
+    data = NULL;
+    setSize(tdi.rightCol, tdi.bottomRow);
+    for(int row = 0; row < tdi.bottomRow; row++)
+        for(int col = 0; col < tdi.rightCol; col++)
+            data[row][col] = tdi.data[row][col];
+}
 
-[ # ]| a | b | c | d | e | f | g |
-----------------------------------
-[ 0 ]| 1 | 1 | 1 | 1 | 1 | 1 | 0 | 
+void SevenSegmentImage::clearImage(){
+    for (int row = 0; row < bottomRow; row++)
+        for (int col = 0; col < rightCol; col++)
+            data[row][col] = false;
+}
 
-[ 1 ]| 0 | 1 | 1 | 0 | 0 | 0 | 0 | 
+bool SevenSegmentImage::turnOnCellsForSegment(char segment){
+    switch(segment){
+        case 'a': 
+            drawHorizontal(topRow);
+            break;
+        case 'b': 
+            drawVertical(rightCol, topRow, midRow);
+            break;
+        case 'c': 
+            drawVertical(rightCol, midRow, bottomRow);
+            break;
+        case 'd': 
+            drawHorizontal(bottomRow);
+            break;
+        case 'e': 
+            drawVertical(leftCol, midRow, bottomRow);
+            break;
+        case 'f': 
+            drawVertical(leftCol, topRow, midRow);
+            break;
+        case 'g': 
+            drawHorizontal(midRow);
+            break;
+        default:
+            return false;
+    }
+    return true;
+}
 
-[ 2 ]| 1 | 1 | 0 | 1 | 1 | 0 | 1 | 
+bool SevenSegmentImage::setSize(int width, int height){
+    if(!validateSize(width, height))
+        return false;
+    deallocateArray();
+    topRow = 1;
+    midRow = (height + 1) / 2;
+    bottomRow = height;
+    leftCol = 1;
+    rightCol = width;
+    allocateCleanArray();
+    return true;
+}
 
-[ 3 ]| 1 | 1 | 1 | 1 | 0 | 0 | 1 | 
+void SevenSegmentImage::display(){
+    for(int row = 0; row < bottomRow; row++){
+        cout << endl;
+        for(int col = 0; col < rightCol; col++)
+            cout << (data[row][col] ? DRAW_CHAR : BLANK_CHAR);
+    }
+}
 
-[ 4 ]| 0 | 1 | 1 | 0 | 0 | 1 | 1 | 
+const SevenSegmentImage & SevenSegmentImage::operator=
+    (const SevenSegmentImage &rhs){
+    if(this != &rhs){
+        this->setSize(rhs.rightCol, rhs.bottomRow);
+        for(int row = 0; row < rhs.bottomRow; row++)
+            for(int col = 0; col < rhs.rightCol; col++)
+                this->data[row][col] = rhs.data[row][col];
+    }
+    return *this;
+}
 
-[ 5 ]| 1 | 0 | 1 | 1 | 0 | 1 | 1 | 
+bool SevenSegmentImage::validateSize(int width, int height){
+    if(width < MIN_WIDTH || width > MAX_WIDTH ||
+        height < MIN_HEIGHT || height > MAX_HEIGHT || height % 2 == 0)
+        return false;
+    return true;
+}
 
-[ 6 ]| 1 | 0 | 1 | 1 | 1 | 1 | 1 | 
+void SevenSegmentImage::allocateCleanArray(){
+    if (data != NULL)
+        deallocateArray();
 
-[ 7 ]| 1 | 1 | 1 | 0 | 0 | 0 | 0 | 
+    data = new bool*[bottomRow];
+    for (int row = 0; row < bottomRow; row++)
+       data[row] = new bool[rightCol];
 
-[ 8 ]| 1 | 1 | 1 | 1 | 1 | 1 | 1 | 
+    for (int row = 0; row < bottomRow; row++)
+        for (int col = 0; col < rightCol; col++)
+            data[row][col] = false;
+}
 
-[ 9 ]| 1 | 1 | 1 | 0 | 0 | 1 | 1 | 
+void SevenSegmentImage::deallocateArray(){
+    if (data == NULL)
+        return;
 
-[ 10]| 1 | 1 | 1 | 0 | 1 | 1 | 1 | 
+    for (int row = 0; row < bottomRow; row++)
+        delete[] data[row];
+    delete[] data;
+    data = NULL;
+}
 
-[ 11]| 0 | 0 | 1 | 1 | 1 | 1 | 1 | 
+void SevenSegmentImage::drawHorizontal(int row){
+    for(int col = 0; col < rightCol; col++)
+        data[row - 1][col] = true;
+}
 
-[ 12]| 1 | 0 | 0 | 1 | 1 | 1 | 0 | 
+void SevenSegmentImage::drawVertical(int col, int startRow, int stopRow){
+    for(int row = startRow; row <= stopRow; row++)
+        data[row - 1][col - 1] = true;
+}
 
-[ 13]| 0 | 1 | 1 | 1 | 1 | 0 | 1 | 
+// SevenSegmentDisplay method definitions
+SevenSegmentDisplay::SevenSegmentDisplay(int width, int height){
+    if(!setSize(width, height))
+        setSize(SevenSegmentImage::MIN_WIDTH, SevenSegmentImage::MIN_HEIGHT);
+}
 
-[ 14]| 1 | 0 | 0 | 1 | 1 | 1 | 1 | 
+bool SevenSegmentDisplay::setSize(int width, int height){
+    return theImage.setSize(width, height);
+}
 
-[ 15]| 1 | 0 | 0 | 0 | 1 | 1 | 1 | 
+void SevenSegmentDisplay::loadConsoleImage(){
+    theImage.clearImage();
+    for(int seg = 'a'; seg <= 'g'; seg++)
+        if(theDisplay.getValOfSeg(seg - 'a'))
+            theImage.turnOnCellsForSegment(seg);
+}
+
+void SevenSegmentDisplay::consoleDisplay(){
+    theImage.display();
+}
+
+void SevenSegmentDisplay::eval(int input){
+    theDisplay.eval(input);
+}
+
+/* ----------------------------- TEST -----------------------------------------
+
+0 :
+*****
+*   *
+*   *
+*   *
+*   *
+*   *
+*****
+1 :
+    *
+    *
+    *
+    *
+    *
+    *
+    *
+2 :
+*****
+    *
+    *
+*****
+*    
+*    
+*****
+3 :
+*****
+    *
+    *
+*****
+    *
+    *
+*****
+4 :
+*   *
+*   *
+*   *
+*****
+    *
+    *
+    *
+5 :
+*****
+*    
+*    
+*****
+    *
+    *
+*****
+6 :
+*****
+*    
+*    
+*****
+*   *
+*   *
+*****
+7 :
+*****
+    *
+    *
+    *
+    *
+    *
+    *
+8 :
+*****
+*   *
+*   *
+*****
+*   *
+*   *
+*****
+9 :
+*****
+*   *
+*   *
+*****
+    *
+    *
+    *
+10 :
+*****
+*   *
+*   *
+*****
+*   *
+*   *
+*   *
+11 :
+*    
+*    
+*    
+*****
+*   *
+*   *
+*****
+12 :
+*****
+*    
+*    
+*    
+*    
+*    
+*****
+13 :
+    *
+    *
+    *
+*****
+*   *
+*   *
+*****
+14 :
+*****
+*    
+*    
+*****
+*    
+*    
+*****
+15 :
+*****
+*    
+*****
+*    
+*    
+*    
 
 
 Process exited with code: 0
