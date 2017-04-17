@@ -1,17 +1,19 @@
 #include <iostream>
 #include <string>
-#include <math.h>
 
 using namespace std;
 
+
+// main method ---------------------------------------
 int main()
 {
-    int i;
+
+    int a = 0;
     
-    i=-69;
-    if(69+i)
-        cout << i << endl;
-    
-    
+    for ( a; a < 5; a++ )
+        cout << a;
     return 0;
 }
+
+// output: 4.4 3.3 2.2 1.1 (empty Queue) 
+// queue output: 1.1 2.2 3.3 4.4 (empty Queue)
