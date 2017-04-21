@@ -1,19 +1,29 @@
 #include <iostream>
-#include <string>
+#include <math.h>
 
 using namespace std;
 
+int binary(int num)
+{
+    if (num == 0)
+        return 0;
+    
+    if (num & 1)
+        return 1 + binary(num >> 1);
+    
+    return binary(num >> 1);
+}
 
-// main method ---------------------------------------
 int main()
 {
-
-    int a = 0;
-    
-    for ( a; a < 5; a++ )
-        cout << a;
+    int N;
+    cout << "Enter N: ";
+    cin >> N;
+    cout << "Number of 1's in binary representation of " << N << " is " << binary(N) << endl;
     return 0;
 }
 
-// output: 4.4 3.3 2.2 1.1 (empty Queue) 
-// queue output: 1.1 2.2 3.3 4.4 (empty Queue)
+//-----------------------------------------Sample Output 1------------------------------------------------
+//12
+//nter N: Number of 1's in binary representation of 12 is 2
+//Program ended with exit code: 0
