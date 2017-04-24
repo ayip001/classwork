@@ -61,7 +61,7 @@ myType getMin(myType a, myType b){
 int main(){
     // PART 1 TEST
     std::cout << "Testing numbers of '1's recursion:\n"
-        << numOfBinOnesInNum(-17) << std::endl        // -10001            (2)
+        << numOfBinOnesInNum(-18) << std::endl        // -10001            (2)
         << numOfBinOnesInNum(65536) << std::endl      // 10000000000000000 (1)
         << numOfBinOnesInNum(857) << std::endl;       // 1101011001        (6)
     
