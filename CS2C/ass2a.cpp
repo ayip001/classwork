@@ -29,7 +29,8 @@ int main(){
         << "The GCD of 1000012337 and 4 is " << gcd(1000012337, 4) << std::endl
         << "The GCD of 262144 and -131072 is " << gcd(262144, -131072);
     t = clock() - t;
-    double time_taken = ((double)t)/CLOCKS_PER_SEC;
+    double time_taken = ((double)t) / CLOCKS_PER_SEC;  // time in s
+    time_taken *= 1000;                                // time in ms
     std::cout << std::endl << std::fixed << time_taken << " ms";
     return 0;
 }
@@ -39,7 +40,7 @@ int main(){
 The GCD of 270 and -192 is 6
 The GCD of 1000012337 and 4 is 1
 The GCD of 262144 and -131072 is 131072
-0.000064 ms
+0.064 ms
 
 Process exited with code: 0
 
