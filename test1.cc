@@ -1,29 +1,44 @@
 #include <iostream>
-#include <math.h>
+#include <iomanip>
+#include <time.h>
 
-using namespace std;
-
-int binary(int num)
-{
-    if (num == 0)
-        return 0;
+int main(){
+    clock_t t;
+    t = clock();
+    int i = 0, j = 0, k = 0;
+    int n = 1000;
     
-    if (num & 1)
-        return 1 + binary(num >> 1);
-    
-    return binary(num >> 1);
-}
+    int sum = 0;
 
-int main()
-{
-    int N;
-    cout << "Enter N: ";
-    cin >> N;
-    cout << "Number of 1's in binary representation of " << N << " is " << binary(N) << endl;
+for( i = 1; i < n; ++i )
+
+for( j = 1; j < i * i; ++j )
+
+if( j % i == 0 )
+
+for( k = 0; k < j; ++k )
+
+++sum;
+    
+    
+    t = clock() - t;
+    double time_taken = ((double)t) / CLOCKS_PER_SEC;   // time in s
+    time_taken *= 1000;                                 // time in ms
+    
+    std::fixed;
+    std::setprecision(2);
+    std::cout << std::endl << time_taken << " ms";
+    
     return 0;
 }
 
-//-----------------------------------------Sample Output 1------------------------------------------------
-//12
-//nter N: Number of 1's in binary representation of 12 is 2
-//Program ended with exit code: 0
+/* -------------------------- TEST RUN OUTPUT ---------------------------------
+
+The GCD of 270 and -192 is 6
+The GCD of 1000012337 and 4 is 1
+The GCD of 262144 and -131072 is 131072
+0.064 ms
+
+Process exited with code: 0
+
+---------------------------------------------------------------------------- */
