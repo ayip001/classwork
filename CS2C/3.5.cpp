@@ -10,7 +10,7 @@ list<type> Union(list<type> L1, list<type> L2)
     list<type> result;
     typename list<type>::const_iterator L1pos = L1.begin(), L2pos = L2.begin();
     type toBeInserted;
-    while( L1pos != L1.end() && L2pos != L2.end() ) //while not at the end of either list
+    while( L1pos != L1.end() && L2pos != L2.end() ) 
     {
         if( *L1pos < *L2pos )
         {

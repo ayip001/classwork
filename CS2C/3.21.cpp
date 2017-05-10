@@ -37,8 +37,23 @@ bool isBalanced(string str)
 
 int main()
 {
-	string test;
-	cout << "Please enter test expression: ";
-	cin >> test;
-	cout << "Balanced: " << isBalanced(test);
+	cout << 
+		"\"b(a)l(a)n(c)e[d][{}]\" is balanced?: " << 
+		isBalanced("b(a)l(a)n(c)e[d][{}]") << 
+		"\n\"not ()[{]} balanced\" is balanced?: " <<
+		isBalanced("not ()[{]} balanced") << 
+		"\n\"empty and balanced\" is balanced?: " <<
+		isBalanced("empty and balanced");
+		
+	return 0;
 }
+
+/* ---------------------------------- TEST ------------------------------------
+
+"b(a)l(a)n(c)e[d][{}]" is balanced?: 1
+"not ()[{]} balanced" is balanced?: 0
+"empty and balanced" is balanced?: 1
+
+Process exited with code: 0
+
+---------------------------------------------------------------------------- */

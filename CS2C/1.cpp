@@ -1,3 +1,5 @@
+// apparently teacher wanted minus sign as an additional 1.
+
 #include <iostream>
 #include <string>
 

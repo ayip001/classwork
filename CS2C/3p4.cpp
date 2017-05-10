@@ -1,105 +1,191 @@
-#include<iostream>
-#include<stack>
-#include<string>
+#include <iostream>
+#include <string>
+#include <algorithm>
 
 using namespace std;
 
 template <typename Object>
-class List{
-private:
-    struct Node { /* See Figure 3.13 */ };
-
+class Vector
+{
 public:
-    class const_iterator { /* See Figure 3.14 */ };
-    class iterator : public const_iterator { /* See Figure 3.15 */ };
+	explicit Vector(int initSize = 0) : theSize{ initSize },
+		theCapacity{ initSize + SPARE_CAPACITY }
+	{
+		objects = new Object[theCapacity];
+	}
 
-public:
+	Vector(const Vector & rhs) : theSize{ rhs.theSize },
+		theCapacity{ rhs.theCapacity }, objects{ nullptr }
+	{
+		objects = new Object[theCapacity];
 
-    List( ) { /* See Figure 3.16 */ }
-    List( const List & rhs ) { /* See Figure 3.16 */ }
-    ~List( ) { /* See Figure 3.16 */ }
-    List & operator= ( const List & rhs ) { /* See Figure 3.16 */ }
-    List( List && rhs ) { /* See Figure 3.16 */ }
-    List & operator= ( List && rhs ) { /* See Figure 3.16 */ }
+		for( int k = 0; k < theSize; ++k )
+			objects[k] = rhs.objects[k];
+	}
 
-    iterator begin( ) { return { head->next }; }
-    const_iterator begin( ) const { return { head->next }; }
-    iterator end( ) { return { tail }; }
-    const_iterator end( ) const { return { tail }; }
+	Vector & operator= (const Vector & rhs)
+	{
+		Vector copy = rhs;
+		std::swap(*this, copy);
+		return *this;
+	}
 
-    int size( ) const { return theSize; }
-    bool empty( ) const { return size( ) == 0; }
+	~Vector() { delete[] objects; }
 
-    void clear( ){
-        while( !empty( ) )
-            pop_front( );
-    }
+	Vector(Vector && rhs) : theSize{ rhs.theSize },
+		theCapacity{ rhs.theCapacity }, objects{ rhs.objects }
+	{
+		rhs.objects = nullptr;
+		rhs.theSize = 0;
+		rhs.theCapacity = 0;
+	}
 
-    Object & front( ) { return *begin( ); }
-    const Object & front( ) const { return *begin( ); }
-    Object & back( ) { return *--end( ); }
-    const Object & back( ) const { return *--end( ); }
-    void push_front( const Object & x ) { insert( begin( ), x ); }
-    void push_front( Object && x ) { insert( begin( ), std::move( x ) ); }
-    void push_back( const Object & x ) { insert( end( ), x ); }
-    void push_back( Object && x ) { insert( end( ), std::move( x ) ); }
-    void pop_front( ) { erase( begin( ) ); }
-    void pop_back( ) { erase( --end( ) ); }
+	Vector & operator= (Vector && rhs)
+	{
+		std::swap(theSize, rhs.theSize);
+		std::swap(theCapacity, rhs.theCapacity);
+		std::swap(objects, rhs.objects);
+		return *this;
+	}
 
-    iterator insert( iterator itr, const Object & x ) { /* See Figure 3.18 */ }
-    iterator insert( iterator itr, Object && x ) { /* See Figure 3.18 */ }
+	void resize(int newSize)
+	{
+		if( newSize > theCapacity )
+			reserve(newSize * 2);
+		theSize = newSize;
+	}
 
-    iterator erase( iterator itr ) { /* See Figure 3.20 */ }
-    iterator erase( iterator from, iterator to ) { /* See Figure 3.20 */ }
+	void reserve(int newCapacity)
+	{
+		if( newCapacity < theSize )
+			return;
+
+		Object *newArray = new Object[newCapacity];
+		for( int k = 0; k < theSize; ++k )
+			newArray[k] = std::move(objects[k]);
+
+		theCapacity = newCapacity;
+		std::swap(objects, newArray);
+		delete[] newArray;
+	}
+
+	Object & operator[](int index) { return objects[index]; }
+	const Object & operator[](int index) const { return objects[index]; }
+	bool empty() const { return size() == 0; }
+	int size() const { return theSize; }
+	int capacity() const { return theCapacity; }
+
+	void push_back(const Object & x)
+	{
+		if( theSize == theCapacity )
+			reserve(2 * theCapacity + 1);
+		objects[theSize++] = x;
+	}
+
+	void push_back(Object && x)
+	{
+		if( theSize == theCapacity )
+			reserve(2 * theCapacity + 1);
+		objects[theSize++] = std::move(x);
+
+	}
+
+	Object pop_back() { --theSize; return objects[theSize]; }
+	const Object & back() const { return objects[theSize - 1]; }
+
+	typedef Object * iterator;
+	typedef const Object * const_iterator;
+
+	iterator begin() { return &objects[0]; }
+	const_iterator begin() const { return &objects[0]; }
+	iterator end() { return &objects[size()]; }
+	const_iterator end() const { return &objects[size()]; }
+	static const int SPARE_CAPACITY = 16;
 
 private:
-    int theSize;
-    Node *head;
-    Node *tail;
-
-    void init( ) { /* See Figure 3.16 */ }
-
+	int theSize;
+	int theCapacity;
+	Object * objects;
 };
 
-List( ){ init( ); }
+template <typename Object>
+class Stack
+{
+public:
+    class OutOfBoundsException {};
+    
+	Stack() { V = Vector<Object>(); }
+	void push(const Object& obj);
+	Object pop();
+	int getSize(){ return V.size(); }
+	bool isEmpty(){ return V.size() == 0; }
+	
+private:
+	Vector<Object> V;
+};
 
-~List( ){
-    clear( );
-    delete head;
-    delete tail;
+template <typename Object>
+void Stack<Object>::push(const Object& obj)
+{
+	V.push_back(obj);
 }
 
-List( const List & rhs ){
-    init( );
-    for( auto & x : rhs )
-        push_back( x );
+template <typename Object>
+Object Stack<Object>::pop()
+{
+	if (V.size() == 0)
+		throw OutOfBoundsException();
+
+	return V.pop_back();
 }
 
-List & operator= ( const List & rhs ){
-    List copy = rhs;
-    std::swap( *this, copy );
-    return *this;
+int main()
+{
+	Stack<char> S;
+	S.push('1');
+	S.push('2');
+	S.push('3');
+	S.push('4');
+	
+	cout << "should be 4321: ";
+	
+	for(int i; i < 4; i++)
+	    cout << S.pop();
+	    
+	S.push('4');
+	S.push('3');
+	S.push('2');
+	S.push('1');
+	
+	cout << "\nshould be 1234: ";
+	
+	for(int i; i < 4; i++)
+	    cout << S.pop();
+	    
+	S.push('1');
+	S.push('2');
+	S.push('3');
+	
+	cout << "\nshould be out of bound: ";
+	
+	try
+	{
+    	for(int i; i < 4; i++)
+    	    cout << S.pop();
+	}
+	catch(Stack<char>::OutOfBoundsException)
+	{
+	    cout << " bound exception caught";
+	}
+	return 0;
 }
 
-List( List && rhs )
-    : theSize{ rhs.theSize }, head{ rhs.head }, tail{ rhs.tail }{
-    rhs.theSize = 0;
-    rhs.head = nullptr;
-    rhs.tail = nullptr;
-}
+/* ----------------------------- TEST -----------------------------------------
 
-List & operator= ( List && rhs ){
-    std::swap( theSize, rhs.theSize );
-    std::swap( head, rhs.head );
-    std::swap( tail, rhs.tail );
+should be 4321: 4321
+should be 1234: 1234
+should be out of bound: 321 bound exception caught
 
-    return *this;
-}
+Process exited with code: 0
 
-void init( ){
-    theSize = 0;
-    head = new Node;
-    tail = new Node;
-    head->next = tail;
-    tail->prev = head;
-}
+---------------------------------------------------------------------------- */
